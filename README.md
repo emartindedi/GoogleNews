@@ -173,7 +173,8 @@ def analize_sentiment(self, text):
         return -1
 
 ```
-La función core de todo el proyecto es `generate_dataframe` en la cual se genera el conjunto
+
+La función **core** de todo el proyecto es `generate_dataframe` en la cual se genera el conjunto
 de datos (diccionario) de todas las noticias extraidas de Google News.
 El diccionario contiene la información: fecha, última actualización, topic, fuente, resumen noticia, 
 link y analisis sentimental.
@@ -443,7 +444,7 @@ def extract_google_news(self):
 
 ```
 
-La ejecución del código se realiza en otro script llamado main.py que crea una instancia de
+La ejecución del código se realiza en otro script llamado run_google_news.py que crea una instancia de
 la clase y llama a la funcion extract_google_news.
 
 ```
@@ -551,3 +552,5 @@ xlrd==1.2.0
 XlsxWriter==3.0.3
 zipp==3.10.0
 ```
+
+
