@@ -554,3 +554,5 @@ zipp==3.10.0
 ```
 
 
+Cualquier sugerencia, anotación o error encontrado, escribir un correo a emartindedi@alumni.unav.es.
+Estaré encantada de mejorar.
