@@ -93,7 +93,7 @@ class GoogleNews:
         else:
             return -1
 
-    def generate_dataframe(self, driver, topics, topics_urls):
+    def generate_data(self, driver, topics, topics_urls):
         """Core funcion of the class. It generates and saves it locally a dataframe with the information extracted from the
         google news web page
         :param driver: selenium object
@@ -102,6 +102,8 @@ class GoogleNews:
         :return: dictionary with the information extracted"""
         dictionary = {'Fecha': [], 'Ultima actualizacion': [], 'Topic': [], 'Fuente': [], 'Resumen noticia': [],
                       'Link': [], 'Analisis sentimental': []} # Dictionary to save all information that will be extracted
+        #data_google_news = pd.DataFrame(columns = ['Fecha', 'Ultima actualizacion', 'Topic', 'Fuente', 'Resumen noticia',
+                     # 'Link', 'Analisis sentimental'])
         # La fecha se encuentra el la pagina de inicio, por tanto se extrae antes de pinchar en la seccion selecionada
         date = driver.find_element(by=By.CLASS_NAME, value='Hp1DDd.oBu3Fe')
         fecha = date.get_attribute("textContent")
@@ -322,19 +324,32 @@ class GoogleNews:
 
     def extract_google_news(self):
         """Function that manages the rest of the functios of the class"""
+
         self.define_options_scraper()
+
         driver = webdriver.Chrome(ChromeDriverManager().install())
+
         self.open_google_news(driver)
+
         if self.opened != True:
+
             print("Not possible to open the web page of google news")
+
         else:
             print('Inicio: ', time.ctime())
+
             self.inicio = str(time.ctime()) # Cuando se ejecuta
+
             topics, topics_urls = self.get_topics(driver)
-            self.data = self.generate_dataframe(driver, topics, topics_urls)
+
+            self.data = self.generate_data(driver, topics, topics_urls)
+
             df = pd.DataFrame(self.data)
-            df.to_csv('Google_news.csv', index=False) # Save it locally
-            print('Fin: ', time.ctime())
+
+            df.to_csv('{}.csv'.format(os.path.join('GoogleNews', 'Google_news')), index = False)
+
             self.summary(df)
-            print('Fin: ', time.ctime())
+
             self.fin = str(time.ctime()) # Cuando termina
+
+            print('Fin: ', time.ctime())
