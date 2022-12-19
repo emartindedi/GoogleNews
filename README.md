@@ -3,7 +3,7 @@
 
 ### PROYECTO FINAL - 19/12/2022
 
-#### Done by: Elena Martín de Diego emartindedi@alumni.unav.es
+#### Realizado por: Elena Martín de Diego emartindedi@alumni.unav.es
 
 ---
 
@@ -15,6 +15,12 @@
 - [Clase GoogleNews](#GoogleNews)
   - [Atributos](#atr)
   - [Métodos](#met)
+    - [define\_options\_scraper](#define_options_scraper)
+    - [open\_google\_news](#open_google_news)
+    - [get\_topics](#get_topics)
+    - [analize\_sentiment](#analize_sentiment)
+    - [generate\_data](#generate_data)
+    - [summary](#summary)
   - [Gestión de la clase](#manage)
 - [Requerimientos para el correcto funcionamiento](#req) 
 
@@ -23,11 +29,14 @@
 # Objetivos<a name="obj"></a> 
 [Volver al índice](#indice)
 
-El objetivo principal de este proyecto es poner en practica algunas de las técnicas estudiadas a lo
-largo de la asignatura de `Técnicas de Recogida de Datos` del Máster Oficial en Big Data Science, como 
-puede ser el escrapeo de páginas web.
+El objetivo principal de este proyecto es poner en practica las técnicas estudiadas a lo
+largo de la asignatura `Técnicas de Recogida de Datos` del Máster Oficial en Big Data Science, como 
+puede ser el escrapeo de páginas web para la obtención de datos.
 En concreto, se extraerá información de la página web de Noticias de Google (https://news.google.com/) haciendo 
 uso de librerías como Selenium.
+
+<img src="img/web.png" alt="web" width="740"/>
+
 ---
 
 
@@ -35,7 +44,7 @@ uso de librerías como Selenium.
 # Importacion de las librerias<a name="lib"></a> 
 [Volver al índice](#indice)
 
-```
+```python
 import time
 import datetime
 import os
@@ -78,7 +87,7 @@ import re
 
 Para gestionar este proyecto se ha creado un objeto clase de Python llamado *GoogleNews* con 
 los atributos: 
-```
+```python
 url: str = "https://news.google.com/"
 opened: bool
 topics: list = []
@@ -99,12 +108,16 @@ excepcion de 'Para ti' y 'Siguiendo' debido a que requieren registrarse con una 
 
 ## Métodos<a name="met"></a> 
 [Volver al índice](#indice)
+
 Los métodos de la clase GoogleNews se describen a continuación.
 
-`define_options_scraper` es simplemente usado para configurar la apariencia de la pestaña 
+### define_options_scraper<a name="define_options_scraper"></a> 
+[Volver al índice](#indice)
+
+`define_options_scraper` es usado para configurar la apariencia de la pestaña de Google Chrome 
 cuando es abierta automaticamente.
 
-```
+```python
 def define_options_scraper(self):
     """Configurating the web page appearance"""
     options = Options()
@@ -114,9 +127,15 @@ def define_options_scraper(self):
     options.add_argument('--headless')  # Headless mode
 ```
 
-`open_google_news` sirve para abrir una pestaña nueva de Google Chrome 
+### open_google_news<a name="open_google_news"></a> 
+[Volver al índice](#indice)
 
-```
+`open_google_news` es la encargada de abrir una pestaña nueva de Google Chrome, en el caso posible, y pinchar en la opción de 'Aceptar todo' como 
+se muestra en la imagen.
+
+<img src="img/consent.png" alt="web" width="180"/>
+
+```python
 def open_google_news(self, driver):
     """Open the web page contained in the url attribute of the class
     :param: driver selenium object
@@ -133,15 +152,21 @@ def open_google_news(self, driver):
         self.opened = True
     else:
         self.opened = False
-
 ```
 
-`get_topics` nos sirve para extraer todos las opciones de temas posibles de
+### get_topics<a name="get_topics"></a> 
+[Volver al índice](#indice)
+
+`get_topics` extrae todos las opciones de temas posibles de
 obtención de información de Google. Tiene como input el driver y devuelve tanto 
 una lista con los temas posibles como otra lista con los links respectivos (guardada en un atributo
-para poder acceder más adelante).
+para poder acceder más adelante). Notar que 'Para ti' y 'Siguiendo' son omitidos al 
+tener que crear una cuenta en Google para acceder y por la diversidad de noticias en función de 
+aspectos ajenos al trabajo.
 
-```
+<img src="img/topics.png" alt="web" width="400"/>
+
+```python
 def get_topics(self, driver):
     """Function to obtain the possible topics
     :param: driver: selenium driver object with the google news google chrome tab
@@ -154,11 +179,14 @@ def get_topics(self, driver):
 
 ```
 
+### analize_sentiment<a name="analize_sentiment"></a> 
+[Volver al índice](#indice)
+
 Un objetivo es analizar las noticias con la función `analize_sentiment`, que clasifica las
 noticias (texto) en tres clases diferentes: {1: polaridad positiva, 0: neutro, -1: polaridad
 negativa}.
 
-```
+```python
 def analize_sentiment(self, text):
     """Utility function to classify the polarity of a string
     using textblob
@@ -174,13 +202,72 @@ def analize_sentiment(self, text):
 
 ```
 
-La función **core** de todo el proyecto es `generate_dataframe` en la cual se genera el conjunto
+### generate_data<a name="generate_data"></a> 
+[Volver al índice](#indice)
+
+La función **core** de todo el proyecto es `generate_data` en la cual se genera el conjunto
 de datos (diccionario) de todas las noticias extraidas de Google News.
 El diccionario contiene la información: fecha, última actualización, topic, fuente, resumen noticia, 
 link y analisis sentimental.
 
-```
-def generate_dataframe(self, driver, topics, topics_urls):
+Los **pasos** seguidos son:
+1. Crear el diccionario 'dictionary'
+2. Encontrar la fecha 
+  ```
+  date = driver.find_element(by=By.CLASS_NAME, value='Hp1DDd.oBu3Fe')
+  fecha = date.get_attribute("textContent")
+  current_time = ' de ' + str(datetime.datetime.today().year)
+  ```
+  <img src="img/fecha.png" alt="web" width="400"/>
+
+3. Recorrer todos los posibles temas, donde para cada tema (topic) es extraída y almacenada la información
+   
++ Accedemos al link ya obtenido previamente para cada topic
+
+    ```
+    # Access the topic by his url previously obtained
+    driver.get(topics_urls[num])
+    time.sleep(3)
+    url = driver.current_url
+    ```
+  
+  Se comenta el código para algunas porque son análogos.
++ Inicio:
+  + Se accede a 'Noticias destacadas' 
+   <img src="img/noticias_destacadas.png" alt="web" width="300"/>
+    ```
+    # Go to Noticas Destacadas
+    noticias_destacadas = driver.find_element(by=By.CLASS_NAME, value='aqvwYd')
+    driver.get(noticias_destacadas.get_attribute('href'))  # Go to the link
+    ```
+  + Igual al resto
+
++ Ciencia y tecnología:
+  + Se obtienen las noticias relativas a 'Ciencia y Tecnología' con el nombre de la clase 'WwrzSb', 
+  común para todas. Todas las fuentes tiene como clase 'vr1PYe' y la última actualización 'hvbAAd'.
+  
+    <img src="img/ciencia.png" alt="web" width="300"/>
+  
+     ```
+     noticias = driver.find_elements(by=By.CLASS_NAME, value='WwrzSb')
+     fuente = driver.find_elements(by=By.CLASS_NAME, value='vr1PYe')
+     time_ago = driver.find_elements(by=By.CLASS_NAME, value='hvbAAd')
+     ```
+  + De cada noticia, se obtiene la información relevante:
+     ```
+     i = 0
+     for noticia in noticias:
+         dictionary['Fecha'].append(fecha + current_time)
+         dictionary['Ultima actualizacion'].append(time_ago[i].get_attribute("textContent"))
+         dictionary['Topic'].append(topics[num])
+         dictionary['Fuente'].append(fuente[i].get_attribute("textContent"))
+         dictionary['Resumen noticia'].append(str(noticia.get_attribute("aria-label")))
+         dictionary['Link'].append(noticia.get_attribute('href'))
+         i += 1
+     ```
+
+```python
+def generate_data(self, driver, topics, topics_urls):
     """Core funcion of the class. It generates and saves it locally a dataframe with the information extracted from the
     google news web page
     :param driver: selenium object
@@ -356,10 +443,13 @@ def generate_dataframe(self, driver, topics, topics_urls):
 
 ```
 
+### summary<a name="summary"></a> 
+[Volver al índice](#indice)
+
 Para finalizar se muestran por pantalla un resumen de la columna escogida por el usuario gracias a 
 la función `summary`.
 
-```
+```python
 def summary(self, df):
     """Print a summary of the columns choosen
     :param: df: pandas dataframe with the information"""
@@ -421,33 +511,44 @@ primero accede a la página web y si ha sido posible obtiene los topics para pos
 el diccionario con todo lo recogido. Éste es guardado en un archivo Google_news.csv gracias a transformarlo
 previamente a pandas dataframe. Finalmente 
 
-```
+```python
 def extract_google_news(self):
     """Function that manages the rest of the functios of the class"""
+    
     self.define_options_scraper()
+    
     driver = webdriver.Chrome(ChromeDriverManager().install())
+    
     self.open_google_news(driver)
+    
     if self.opened != True:
+        
         print("Not possible to open the web page of google news")
+        
     else:
         print('Inicio: ', time.ctime())
+        
         self.inicio = str(time.ctime()) # Cuando se ejecuta
+        
         topics, topics_urls = self.get_topics(driver)
-        self.data = self.generate_dataframe(driver, topics, topics_urls)
+        
+        self.data = self.generate_data(driver, topics, topics_urls)
+        
         df = pd.DataFrame(self.data)
+        
         df.to_csv('Google_news.csv', index=False) # Save it locally
-        print('Fin: ', time.ctime())
+        
         self.summary(df)
-        print('Fin: ', time.ctime())
+        
         self.fin = str(time.ctime()) # Cuando termina
-
-
+        
+        print('Fin: ', time.ctime())
 ```
 
-La ejecución del código se realiza en otro script llamado run_google_news.py que crea una instancia de
+La ejecución del código se realiza en otro script llamado `run_google_news.py` que crea una instancia de
 la clase y llama a la funcion extract_google_news.
 
-```
+```python
 from google_news import *
 
 if __name__ == '__main__':
