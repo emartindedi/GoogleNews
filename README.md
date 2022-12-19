@@ -235,6 +235,7 @@ Los **pasos** seguidos son:
 + Inicio:
   + Se accede a 'Noticias destacadas' 
    <img src="img/noticias_destacadas.png" alt="web" width="300"/>
+
     ```
     # Go to Noticas Destacadas
     noticias_destacadas = driver.find_element(by=By.CLASS_NAME, value='aqvwYd')
