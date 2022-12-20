@@ -23,6 +23,7 @@
     - [summary](#summary)
   - [Gestión de la clase](#manage)
 - [Requerimientos para el correcto funcionamiento](#req) 
+- [Pasos futuros](#future)
 
 ---
 
@@ -131,7 +132,7 @@ def define_options_scraper(self):
 [Volver al índice](#indice)
 
 `open_google_news` es la encargada de abrir una pestaña nueva de Google Chrome, en el caso posible, y pinchar en la opción de 'Aceptar todo' como 
-se muestra en la imagen.
+se muestra en la imagen. Si ha podido acceder a la página web actualiza el atributo opened a True y en caso contrario a False.
 
 <img src="img/consent.png" alt="web" width="180"/>
 
@@ -183,8 +184,8 @@ def get_topics(self, driver):
 [Volver al índice](#indice)
 
 Un objetivo es analizar las noticias con la función `analize_sentiment`, que clasifica las
-noticias (texto) en tres clases diferentes: {1: polaridad positiva, 0: neutro, -1: polaridad
-negativa}.
+noticias (que serán un texto) en tres clases diferentes: {1: polaridad positiva, 0: neutro, -1: polaridad
+negativa}. Será añadida una columna al conjunto de datos aplicando esta función.
 
 ```python
 def analize_sentiment(self, text):
@@ -655,6 +656,14 @@ XlsxWriter==3.0.3
 zipp==3.10.0
 ```
 
+# Pasos futuros <a name="future"></a> 
+[Volver al índice](#indice)
 
-Cualquier sugerencia, anotación o error encontrado, escribir un correo a emartindedi@alumni.unav.es.
+Notar que el código puede variar en el tiempo si se modifica la apariencia de la página web, 
+es decir, si los xpath dejan de ser los que están a día de hoy.
+
+Como **pasos futuros** de este proyecto es la inclusión de las noticias relativas a 'Siguiendo' una vez accedido
+con un e-mail de Google.
+
+Esta solución no es la única por tanto cualquier sugerencia, anotación o error encontrado, escribir un correo a emartindedi@alumni.unav.es.
 Estaré encantada de mejorar.
